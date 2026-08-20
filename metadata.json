@@ -1,0 +1,6 @@
+{
+  "name": "StageBiz - Mini Social Network",
+  "description": "Mạng xã hội StageBiz với xác thực JWT, trang cá nhân, đăng bài, chia sẻ bài viết về trang cá nhân, xem danh sách người thả cảm xúc/thả tim (Reactions Modal), bình luận phân cấp, và hệ thống Box Chat nhóm bảo mật.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
