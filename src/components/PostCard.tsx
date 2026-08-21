@@ -28,6 +28,7 @@ import { SharePostModal } from "./SharePostModal";
 import { PrivacySelector, PostPrivacyBadge } from "./PrivacySelector";
 import { resizeMultipleImagesTo300x300 } from "../utils/imageResize";
 import { formatNumber } from "../utils/formatNumber";
+import { sound } from "../utils/sound";
 
 interface PostCardProps {
   post: Post;
@@ -95,6 +96,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     }
 
     try {
+      sound.playPop();
       const res = await api.reactToPost(post.id, type);
       setUserReaction(res.userReaction);
       setLikesCount(res.likesCount);
@@ -114,6 +116,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
     const nextType: ReactionType = userReaction ? userReaction : "like";
     try {
+      sound.playPop();
       const res = await api.reactToPost(post.id, nextType);
       setUserReaction(res.userReaction);
       setLikesCount(res.likesCount);

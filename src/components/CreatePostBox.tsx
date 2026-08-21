@@ -5,6 +5,7 @@ import { api } from "../services/api";
 import { Post, PostVisibility } from "../types";
 import { PrivacySelector } from "./PrivacySelector";
 import { resizeMultipleImagesTo300x300 } from "../utils/imageResize";
+import { sound } from "../utils/sound";
 
 interface CreatePostBoxProps {
   onPostCreated: (newPost: Post) => void;
@@ -58,6 +59,7 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
       setImageUrls([]);
       setShowImagePicker(false);
       setShowEmojiPicker(false);
+      sound.playSuccess();
       onPostCreated(newPost);
       onShowToast("Đã đăng bài viết mới thành công!", "success");
     } catch (err: unknown) {

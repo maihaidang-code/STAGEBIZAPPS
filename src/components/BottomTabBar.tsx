@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Home, 
   UserCheck, 
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
+import { sound } from "../utils/sound";
 
 export type NavTab = "for-you" | "following" | "explore" | "chat" | "notifications" | "profile";
 
@@ -28,16 +29,24 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevUnreadRef = useRef(0);
 
   useEffect(() => {
     if (!isAuthenticated) {
       setUnreadCount(0);
+      prevUnreadRef.current = 0;
       return;
     }
 
     const checkUnread = () => {
       api.getNotifications({ unreadOnly: true })
-        .then((res) => setUnreadCount(res.unreadCount))
+        .then((res) => {
+          if (res.unreadCount > prevUnreadRef.current && prevUnreadRef.current !== 0) {
+            sound.playNotification();
+          }
+          prevUnreadRef.current = res.unreadCount;
+          setUnreadCount(res.unreadCount);
+        })
         .catch(() => {});
     };
 
