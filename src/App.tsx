@@ -10,6 +10,7 @@ import { AuthModal } from "./components/AuthModal";
 import { ImageLightboxModal } from "./components/ImageLightboxModal";
 import { ChatView } from "./components/ChatView";
 import { NotificationsView } from "./components/NotificationsView";
+import { CommunitiesView } from "./components/CommunitiesView";
 import { Toast, ToastMessage } from "./components/Toast";
 import { api } from "./services/api";
 import { Post } from "./types";
@@ -181,6 +182,12 @@ function MainApp() {
                 onSelectUser={handleSelectUser}
                 onShowImageModal={handleOpenLightbox}
                 onShowToast={showToast}
+              />
+            ) : currentTab === "communities" ? (
+              <CommunitiesView
+                onShowToast={showToast}
+                onShowImageModal={handleOpenLightbox}
+                onOpenAuthModal={() => openAuthModal("login")}
               />
             ) : currentTab === "notifications" ? (
               <NotificationsView

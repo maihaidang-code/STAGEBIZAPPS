@@ -10,6 +10,8 @@ import { sound } from "../utils/sound";
 interface CreatePostBoxProps {
   onPostCreated: (newPost: Post) => void;
   onShowToast: (text: string, type?: "success" | "error" | "info") => void;
+  onOpenAuthModal?: () => void;
+  defaultCommunityId?: string;
 }
 
 const PRESET_IMAGES = [
@@ -22,11 +24,19 @@ const PRESET_IMAGES = [
 
 const EMOJIS = ["🔥", "🚀", "☕️", "✨", "🎉", "💡", "❤️", "🙌", "🌅"];
 
-export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onShowToast }) => {
-  const { user, isAuthenticated, openAuthModal } = useAuth();
+export const CreatePostBox: React.FC<CreatePostBoxProps> = ({
+  onPostCreated,
+  onShowToast,
+  onOpenAuthModal,
+  defaultCommunityId,
+}) => {
+  const { user, isAuthenticated, openAuthModal: contextOpenAuthModal } = useAuth();
+  const openAuth = onOpenAuthModal || contextOpenAuthModal;
   const [content, setContent] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<PostVisibility>("public");
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string>(defaultCommunityId || "");
+  const [communities, setCommunities] = useState<any[]>([]);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [customUrlInput, setCustomUrlInput] = useState("");
@@ -35,11 +45,15 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  React.useEffect(() => {
+    api.getCommunities().then((res) => setCommunities(res)).catch(() => {});
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      openAuthModal("login");
+      openAuth("login");
       return;
     }
 
@@ -53,7 +67,8 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
       const newPost = await api.createPost(
         content.trim(),
         imageUrls.length > 0 ? imageUrls : undefined,
-        visibility
+        visibility,
+        selectedCommunityId || undefined
       );
       setContent("");
       setImageUrls([]);
@@ -381,6 +396,21 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
               </div>
 
               <div className="flex items-center gap-2">
+                {communities.length > 0 && !defaultCommunityId && (
+                  <select
+                    value={selectedCommunityId}
+                    onChange={(e) => setSelectedCommunityId(e.target.value)}
+                    className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg border-none font-semibold cursor-pointer focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Đăng lên Bảng tin chung</option>
+                    {communities.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        🛡️ {c.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
                 {isAuthenticated && (
                   <PrivacySelector
                     value={visibility}

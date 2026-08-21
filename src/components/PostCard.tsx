@@ -419,6 +419,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                     <span>Bạn bè</span>
                   </span>
                 )}
+                {post.community && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    <span>🛡️ {post.community.name}</span>
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1.5 text-xs text-slate-400">
                 <span>@{post.author.username}</span>

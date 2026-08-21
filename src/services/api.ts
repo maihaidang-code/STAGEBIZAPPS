@@ -11,6 +11,7 @@ import {
   Notification,
   VerificationRequest,
   PostVisibility,
+  Community,
 } from "../types";
 
 const TOKEN_KEY = "mini_social_jwt_token";
@@ -162,7 +163,7 @@ export const api = {
     return handleResponse<Post>(res);
   },
 
-  async createPost(content: string, imageOrImages?: string | string[], visibility?: PostVisibility): Promise<Post> {
+  async createPost(content: string, imageOrImages?: string | string[], visibility?: PostVisibility, communityId?: string): Promise<Post> {
     const images = Array.isArray(imageOrImages) ? imageOrImages : imageOrImages ? [imageOrImages] : [];
     const res = await fetch("/api/posts", {
       method: "POST",
@@ -171,7 +172,8 @@ export const api = {
         content, 
         image: images[0] || undefined, 
         images: images.length > 0 ? images : undefined,
-        visibility 
+        visibility,
+        communityId
       }),
     });
     return handleResponse<Post>(res);
@@ -524,5 +526,39 @@ export const api = {
       headers: getHeaders(false),
     });
     return handleResponse<{ unreadCount: number }>(res);
+  },
+
+  // ==========================================
+  // COMMUNITIES
+  // ==========================================
+  async getCommunities(): Promise<Community[]> {
+    const res = await fetch("/api/communities", {
+      headers: getHeaders(false),
+    });
+    return handleResponse<Community[]>(res);
+  },
+
+  async getCommunity(id: string): Promise<Community> {
+    const res = await fetch(`/api/communities/${id}`, {
+      headers: getHeaders(false),
+    });
+    return handleResponse<Community>(res);
+  },
+
+  async createCommunity(data: { name: string; description: string; avatar?: string; banner?: string }): Promise<Community> {
+    const res = await fetch("/api/communities", {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Community>(res);
+  },
+
+  async joinCommunity(id: string): Promise<{ isMember: boolean; membersCount: number }> {
+    const res = await fetch(`/api/communities/${id}/join`, {
+      method: "POST",
+      headers: getHeaders(false),
+    });
+    return handleResponse<{ isMember: boolean; membersCount: number }>(res);
   },
 };

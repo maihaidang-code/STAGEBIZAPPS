@@ -7,14 +7,15 @@ import {
   Bell, 
   PlusCircle,
   LogIn,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { sound } from "../utils/sound";
 
-export type NavTab = "for-you" | "following" | "explore" | "chat" | "notifications" | "profile";
+export type NavTab = "for-you" | "following" | "explore" | "chat" | "communities" | "notifications" | "profile";
 
 interface SidebarLeftProps {
   currentTab: NavTab;
@@ -86,6 +87,11 @@ export const SidebarLeft: React.FC<SidebarLeftProps> = ({
       id: "explore" as NavTab,
       label: "Khám phá",
       icon: Compass,
+    },
+    {
+      id: "communities" as NavTab,
+      label: "Cộng đồng",
+      icon: Shield,
     },
   ];
 

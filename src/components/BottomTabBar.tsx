@@ -6,13 +6,14 @@ import {
   Compass, 
   Bell, 
   PlusCircle, 
-  MessageSquare 
+  MessageSquare,
+  Shield
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 import { sound } from "../utils/sound";
 
-export type NavTab = "for-you" | "following" | "explore" | "chat" | "notifications" | "profile";
+export type NavTab = "for-you" | "following" | "explore" | "chat" | "communities" | "notifications" | "profile";
 
 interface BottomTabBarProps {
   currentTab: NavTab;
@@ -65,6 +66,11 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       id: "explore" as NavTab,
       label: "Khám phá",
       icon: Compass,
+    },
+    {
+      id: "communities" as NavTab,
+      label: "Cộng đồng",
+      icon: Shield,
     },
     {
       id: "following" as NavTab,

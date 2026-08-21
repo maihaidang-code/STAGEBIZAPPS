@@ -72,6 +72,7 @@ interface StoredPost {
   content: string;
   image?: string;
   images?: string[];
+  communityId?: string | null;
   originalPostId?: string;
   visibility?: PostVisibility;
   likes: string[];
@@ -517,6 +518,54 @@ const initialVerificationRequests: StoredVerificationRequest[] = [
   },
 ];
 
+interface StoredCommunity {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  avatar: string;
+  banner?: string;
+  creatorId: string;
+  members: string[];
+  createdAt: string;
+}
+
+const initialCommunities: StoredCommunity[] = [
+  {
+    id: "comm_fullstack",
+    name: "Fullstack & AI Vietnam",
+    slug: "fullstack-ai",
+    description: "Cộng đồng chia sẻ kinh nghiệm phát triển ứng dụng Fullstack, React, Node.js và ứng dụng AI thực chiến.",
+    avatar: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&auto=format&fit=crop&q=80",
+    banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+    creatorId: "user-1",
+    members: ["user-1", "user-2", "user-3", "user-4"],
+    createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
+  },
+  {
+    id: "comm_uiux",
+    name: "UI/UX Design Masterclass",
+    slug: "ui-ux-design",
+    description: "Nơi hội tụ các nhà thiết kế giao diện, Product Designer chia sẻ các xu hướng thiết kế tối giản, mượt mà và chuẩn mực.",
+    avatar: "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=400&auto=format&fit=crop&q=80",
+    banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+    creatorId: "user-2",
+    members: ["user-1", "user-2", "user-3"],
+    createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
+  },
+  {
+    id: "comm_startup",
+    name: "Startup & Founder VN",
+    slug: "startup-founder",
+    description: "Giao lưu, gọi vốn, chia sẻ bài học thực chiến khởi nghiệp công nghệ tại Việt Nam và khu vực.",
+    avatar: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&auto=format&fit=crop&q=80",
+    banner: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80",
+    creatorId: "user-3",
+    members: ["user-1", "user-3", "user-4"],
+    createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+  }
+];
+
 // Persistent Database Store with db.json
 class Database {
   users: StoredUser[] = [];
@@ -526,6 +575,7 @@ class Database {
   chatMessages: StoredChatMessage[] = [];
   notifications: StoredNotification[] = [];
   verificationRequests: StoredVerificationRequest[] = [];
+  communities: StoredCommunity[] = [];
 
   constructor() {
     this.load();
@@ -543,6 +593,7 @@ class Database {
         this.chatMessages = data.chatMessages || [...initialChatMessages];
         this.notifications = data.notifications || [...initialNotifications];
         this.verificationRequests = data.verificationRequests || [...initialVerificationRequests];
+        this.communities = data.communities || [...initialCommunities];
         console.log("📂 [Database] Đã tải dữ liệu thành công từ db.json");
         return;
       }
@@ -557,6 +608,7 @@ class Database {
     this.chatMessages = [...initialChatMessages];
     this.notifications = [...initialNotifications];
     this.verificationRequests = [...initialVerificationRequests];
+    this.communities = [...initialCommunities];
     this.commit();
   }
 
@@ -570,6 +622,7 @@ class Database {
         chatMessages: this.chatMessages,
         notifications: this.notifications,
         verificationRequests: this.verificationRequests,
+        communities: this.communities,
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
     } catch (e) {
@@ -818,6 +871,19 @@ class Database {
         ? [post.image] 
         : [];
 
+    let community = null;
+    if (post.communityId) {
+      const comm = this.communities.find((c) => c.id === post.communityId);
+      if (comm) {
+        community = {
+          id: comm.id,
+          name: comm.name,
+          slug: comm.slug,
+          avatar: comm.avatar,
+        };
+      }
+    }
+
     return {
       id: post.id,
       authorId: post.authorId,
@@ -832,6 +898,8 @@ class Database {
       content: post.content,
       image: post.image || images[0],
       images,
+      communityId: post.communityId || null,
+      community,
       originalPostId: post.originalPostId,
       originalPost,
       visibility: post.visibility || "public",
@@ -2038,7 +2106,7 @@ async function startServer() {
 
   // Create Post
   app.post("/api/posts", authenticateToken, (req: AuthRequest, res: Response): void => {
-    const { content, image, images, visibility } = req.body;
+    const { content, image, images, visibility, communityId } = req.body;
 
     const normalizedImages: string[] = Array.isArray(images) && images.length > 0
       ? images.filter(Boolean)
@@ -2060,6 +2128,7 @@ async function startServer() {
       content: (content || "").trim(),
       image: normalizedImages[0] || undefined,
       images: normalizedImages.length > 0 ? normalizedImages : undefined,
+      communityId: communityId || null,
       visibility: postVisibility,
       likes: [],
       reactions: [],
@@ -3278,6 +3347,139 @@ async function startServer() {
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "Không thể xóa thông báo";
+      res.status(500).json({ success: false, error: errorMsg });
+    }
+  });
+
+  // ==========================================
+  // COMMUNITIES API ROUTES
+  // ==========================================
+  app.get("/api/communities", optionalAuthenticate, (req: AuthRequest, res: Response): void => {
+    try {
+      const currentUserId = req.userId;
+      const result = db.communities.map((c) => {
+        const creator = db.findUserById(c.creatorId);
+        const postsCount = db.posts.filter((p) => p.communityId === c.id).length;
+        const isMember = currentUserId ? (c.members || []).includes(currentUserId) : false;
+        const isCreator = currentUserId ? c.creatorId === currentUserId : false;
+        return {
+          ...c,
+          postsCount,
+          isMember,
+          isCreator,
+          creator: creator ? db.sanitizeUser(creator) : null,
+        };
+      });
+      res.json({ success: true, data: result });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Không thể tải danh sách cộng đồng";
+      res.status(500).json({ success: false, error: errorMsg });
+    }
+  });
+
+  app.get("/api/communities/:id", optionalAuthenticate, (req: AuthRequest, res: Response): void => {
+    try {
+      const commId = req.params.id;
+      const comm = db.communities.find((c) => c.id === commId || c.slug === commId);
+      if (!comm) {
+        res.status(404).json({ success: false, error: "Không tìm thấy cộng đồng" });
+        return;
+      }
+      const currentUserId = req.userId;
+      const creator = db.findUserById(comm.creatorId);
+      const postsCount = db.posts.filter((p) => p.communityId === comm.id).length;
+      const isMember = currentUserId ? (comm.members || []).includes(currentUserId) : false;
+      const isCreator = currentUserId ? comm.creatorId === currentUserId : false;
+
+      res.json({
+        success: true,
+        data: {
+          ...comm,
+          postsCount,
+          isMember,
+          isCreator,
+          creator: creator ? db.sanitizeUser(creator) : null,
+        },
+      });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Không thể tải thông tin cộng đồng";
+      res.status(500).json({ success: false, error: errorMsg });
+    }
+  });
+
+  app.post("/api/communities", authenticateToken, (req: AuthRequest, res: Response): void => {
+    try {
+      const { name, description, avatar, banner } = req.body;
+      if (!name || !name.trim()) {
+        res.status(400).json({ success: false, error: "Tên cộng đồng là bắt buộc" });
+        return;
+      }
+      const slug = name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      const newCommunity: StoredCommunity = {
+        id: `comm_${Date.now()}`,
+        name: name.trim(),
+        slug: `${slug}-${Date.now().toString().slice(-4)}`,
+        description: description?.trim() || "",
+        avatar: avatar || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80",
+        banner: banner || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+        creatorId: req.userId!,
+        members: [req.userId!],
+        createdAt: new Date().toISOString(),
+      };
+
+      db.communities.unshift(newCommunity);
+      db.commit();
+
+      res.status(201).json({
+        success: true,
+        message: "Đã tạo cộng đồng thành công!",
+        data: newCommunity,
+      });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Không thể tạo cộng đồng";
+      res.status(500).json({ success: false, error: errorMsg });
+    }
+  });
+
+  app.post("/api/communities/:id/join", authenticateToken, (req: AuthRequest, res: Response): void => {
+    try {
+      const commId = req.params.id;
+      const userId = req.userId!;
+      const comm = db.communities.find((c) => c.id === commId);
+      if (!comm) {
+        res.status(404).json({ success: false, error: "Không tìm thấy cộng đồng" });
+        return;
+      }
+
+      if (!comm.members) comm.members = [];
+      const idx = comm.members.indexOf(userId);
+      let isMember = false;
+      if (idx >= 0) {
+        comm.members.splice(idx, 1);
+        isMember = false;
+      } else {
+        comm.members.push(userId);
+        isMember = true;
+      }
+      db.commit();
+
+      res.json({
+        success: true,
+        message: isMember ? "Đã tham gia cộng đồng" : "Đã rời khỏi cộng đồng",
+        data: {
+          isMember,
+          membersCount: comm.members.length,
+        },
+      });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Không thể thực hiện thao tác";
       res.status(500).json({ success: false, error: errorMsg });
     }
   });

@@ -97,6 +97,13 @@ export interface Post {
   content: string;
   image?: string;
   images?: string[];
+  communityId?: string | null;
+  community?: {
+    id: string;
+    name: string;
+    slug: string;
+    avatar: string;
+  } | null;
   poll?: Poll | null;
   originalPostId?: string;
   originalPost?: Post | null;
@@ -300,3 +307,26 @@ export interface VerificationRequest {
   requestedAt: string;
   reviewedAt?: string;
 }
+
+export interface Community {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  avatar: string;
+  banner?: string;
+  creatorId: string;
+  creator?: {
+    id: string;
+    username: string;
+    name: string;
+    avatar: string;
+    isVerified?: boolean;
+  };
+  membersCount: number;
+  postsCount: number;
+  isMember?: boolean;
+  isCreator?: boolean;
+  createdAt: string;
+}
+
