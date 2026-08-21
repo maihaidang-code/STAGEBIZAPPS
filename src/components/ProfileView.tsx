@@ -29,6 +29,7 @@ import { VerifiedBadge } from "./VerifiedBadge";
 import { SettingsModal } from "./SettingsModal";
 import { VerificationModal } from "./VerificationModal";
 import { AdminVerificationPanel } from "./AdminVerificationPanel";
+import { formatNumber } from "../utils/formatNumber";
 
 interface ProfileViewProps {
   userId: string;
@@ -415,7 +416,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
               >
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
-                  {profileData.followingCount}
+                  {formatNumber(profileData.followingCount)}
                 </span>
                 <span className="text-xs text-slate-400">Đang theo dõi</span>
               </button>
@@ -425,7 +426,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
               >
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
-                  {profileData.followersCount}
+                  {formatNumber(profileData.followersCount)}
                 </span>
                 <span className="text-xs text-slate-400">Người theo dõi</span>
               </button>
@@ -433,7 +434,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {typeof profileData.friendsCount === "number" && (
                 <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                   <span className="text-sm font-bold">
-                    {profileData.friendsCount}
+                    {formatNumber(profileData.friendsCount)}
                   </span>
                   <span className="text-xs text-slate-400 dark:text-slate-400">Bạn bè</span>
                 </div>
@@ -441,7 +442,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
-                  {userPosts.length}
+                  {formatNumber(userPosts.length)}
                 </span>
                 <span className="text-xs text-slate-400">Bài viết</span>
               </div>

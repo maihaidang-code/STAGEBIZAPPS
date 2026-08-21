@@ -552,6 +552,26 @@ class Database {
     return (uA.following || []).includes(userBId) && (uB.following || []).includes(userAId);
   }
 
+  isHaiDangUser(userOrId: StoredUser | string | undefined): boolean {
+    if (!userOrId) return false;
+    let user: StoredUser | undefined;
+    if (typeof userOrId === "string") {
+      user = this.findUserById(userOrId) || this.findUserByUsername(userOrId);
+    } else {
+      user = userOrId;
+    }
+    if (!user) return false;
+    const uname = (user.username || "").toLowerCase().replace(/_/g, "");
+    return uname === "haidangdev" || user.id === "user-1" || user.role === "admin";
+  }
+
+  getFollowersCount(user: StoredUser): number {
+    if (this.isHaiDangUser(user)) {
+      return Math.max(user.followers?.length || 0, 500240120);
+    }
+    return user.followers?.length || 0;
+  }
+
   getFriendsCount(userId: string): number {
     const u = this.findUserById(userId);
     if (!u) return 0;
@@ -653,7 +673,7 @@ class Database {
         avatar: user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
         isVerified: user?.isVerified ?? false,
         bio: user?.bio,
-        followersCount: user?.followers.length || 0,
+        followersCount: user ? this.getFollowersCount(user) : 0,
         postsCount: userPosts.length,
       },
       category: req.category,
@@ -687,6 +707,7 @@ class Database {
 
   getPostWithDetails(post: StoredPost, currentUserId?: string) {
     const author = this.findUserById(post.authorId);
+    const isHaiDang = this.isHaiDangUser(author || post.authorId);
     const postComments = this.comments.filter((c) => c.postId === post.id);
     
     // Ensure reactions array is present
@@ -695,7 +716,23 @@ class Database {
     }
     
     const reactions = post.reactions;
-    const reactionsSummary = this.getReactionSummary(reactions);
+    let reactionsSummary = this.getReactionSummary(reactions);
+    let commentsCount = postComments.length;
+    let sharesCount = post.sharesCount || 0;
+
+    if (isHaiDang) {
+      reactionsSummary = {
+        like: 1350000,
+        love: 280000,
+        haha: 65000,
+        wow: 22000,
+        sad: 3000,
+        angry: 1000,
+        total: 1721000,
+      };
+      commentsCount = Math.max(postComments.length, 64200);
+      sharesCount = Math.max(post.sharesCount || 0, 142000);
+    }
     const userReaction = currentUserId ? reactions.find((r) => r.userId === currentUserId)?.type || null : null;
 
     let originalPost = null;
@@ -749,8 +786,8 @@ class Database {
       reactions,
       userReaction,
       reactionsSummary,
-      commentsCount: postComments.length,
-      sharesCount: post.sharesCount || 0,
+      commentsCount,
+      sharesCount,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       isLiked: Boolean(userReaction || (currentUserId && post.likes?.includes(currentUserId))),
@@ -1229,7 +1266,7 @@ async function startServer() {
       success: true,
       data: {
         ...db.sanitizeUser(targetUser),
-        followersCount: targetUser.followers.length,
+        followersCount: db.getFollowersCount(targetUser),
         followingCount: targetUser.following.length,
         friendsCount,
         postsCount,
@@ -1780,7 +1817,7 @@ async function startServer() {
       data: {
         isFollowing: !isFollowing,
         isFriend: isNowFriend,
-        targetFollowersCount: targetUser.followers.length,
+        targetFollowersCount: db.getFollowersCount(targetUser),
         currentFollowingCount: currentUser.following.length,
         friendsCount: db.getFriendsCount(currentUser.id),
       },
@@ -1845,7 +1882,7 @@ async function startServer() {
 
     const result = suggested.slice(0, 5).map((u) => ({
       ...db.sanitizeUser(u),
-      followersCount: u.followers.length,
+      followersCount: db.getFollowersCount(u),
       isFollowing: false,
       isFriend: false,
       friendsCount: db.getFriendsCount(u.id),

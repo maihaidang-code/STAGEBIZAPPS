@@ -27,6 +27,7 @@ import { PostReactionsModal } from "./PostReactionsModal";
 import { SharePostModal } from "./SharePostModal";
 import { PrivacySelector, PostPrivacyBadge } from "./PrivacySelector";
 import { resizeMultipleImagesTo300x300 } from "../utils/imageResize";
+import { formatNumber } from "../utils/formatNumber";
 
 interface PostCardProps {
   post: Post;
@@ -662,11 +663,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onClick={() => setShowComments(!showComments)}
                   className="hover:underline hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                 >
-                  {commentsCount} bình luận
+                  {formatNumber(commentsCount)} bình luận
                 </button>
               )}
               {sharesCount > 0 && (
-                <span>{sharesCount} lượt chia sẻ</span>
+                <span>{formatNumber(sharesCount)} lượt chia sẻ</span>
               )}
             </div>
           </div>
@@ -715,7 +716,8 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60">
             <CommentSection
               postId={post.id}
-              onCommentCountChange={(newCount) => setCommentsCount(newCount)}
+              postAuthorId={post.authorId}
+              onCommentsCountChange={(newCount) => setCommentsCount(newCount)}
               onSelectUser={onSelectUser}
               onShowToast={onShowToast}
             />

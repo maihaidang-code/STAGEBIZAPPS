@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/Navbar";
-import { SidebarLeft, NavTab } from "./components/SidebarLeft";
+import { BottomTabBar, NavTab } from "./components/BottomTabBar";
 import { SidebarRight } from "./components/SidebarRight";
 import { CreatePostBox } from "./components/CreatePostBox";
 import { PostCard } from "./components/PostCard";
@@ -150,35 +150,11 @@ function MainApp() {
       />
 
       {/* Main Container Layout */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          
-          {/* LEFT SIDEBAR (Col 1-3 on desktop) */}
-          <div className="hidden md:block md:col-span-3 lg:col-span-3 sticky top-20">
-            <SidebarLeft
-              currentTab={currentTab}
-              onSelectTab={handleSelectTab}
-              onOpenCreatePost={() => {
-                if (!isAuthenticated) {
-                  openAuthModal("login");
-                  return;
-                }
-                if (currentTab !== "for-you") {
-                  setCurrentTab("for-you");
-                  setSelectedUserId(null);
-                }
-                setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                  const textarea = document.getElementById("create-post-textarea");
-                  if (textarea) textarea.focus();
-                }, 50);
-              }}
-              onSelectUser={handleSelectUser}
-            />
-          </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 pb-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start justify-center">
 
-          {/* CENTER FEED / VIEW (Col 4-8 on desktop, col 1 on mobile, Col 4-12 in Chat mode) */}
-          <div className={`col-span-1 ${currentTab === "chat" ? "md:col-span-9 lg:col-span-9" : "md:col-span-9 lg:col-span-6"} flex flex-col gap-4`}>
+          {/* CENTER FEED / VIEW (Col 1-8 on desktop, col 1 on mobile, Col 12 in Chat mode) */}
+          <div className={`col-span-12 ${currentTab === "chat" ? "lg:col-span-12 max-w-4xl mx-auto" : "lg:col-span-8"} flex flex-col gap-4`}>
             
             {/* Active Search Filter Banner */}
             {searchQuery && currentTab !== "chat" && (
@@ -273,7 +249,7 @@ function MainApp() {
 
           {/* RIGHT SIDEBAR (Col 9-12 on desktop, hidden in Chat mode for maximum space) */}
           {currentTab !== "chat" && (
-            <div className="hidden lg:block lg:col-span-3 sticky top-20">
+            <div className="hidden lg:block lg:col-span-4 sticky top-20">
               <SidebarRight
                 onSelectUser={handleSelectUser}
                 onFilterHashtag={handleFilterHashtag}
@@ -283,6 +259,28 @@ function MainApp() {
 
         </div>
       </main>
+
+      {/* Fixed Bottom Navigation Tab Bar (Icon Buttons for Desktop & Mobile) */}
+      <BottomTabBar
+        currentTab={currentTab}
+        onSelectTab={handleSelectTab}
+        onOpenCreatePost={() => {
+          if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+          }
+          if (currentTab !== "for-you") {
+            setCurrentTab("for-you");
+            setSelectedUserId(null);
+          }
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            const textarea = document.getElementById("create-post-textarea");
+            if (textarea) textarea.focus();
+          }, 50);
+        }}
+        onSelectUser={handleSelectUser}
+      />
 
       {/* Multi-Image Gallery Lightbox Modal */}
       <ImageLightboxModal

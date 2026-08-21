@@ -346,8 +346,8 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
             )}
 
             {/* Actions Bar */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-700/60">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
                   id="btn-post-photo-toggle"
@@ -360,7 +360,7 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
                 >
                   <ImageIcon className="w-4 h-4 text-emerald-500" />
                   <span>
-                    {imageUrls.length > 0 ? `Ảnh (${imageUrls.length})` : "Nhiều ảnh (300px)"}
+                    {imageUrls.length > 0 ? `Ảnh (${imageUrls.length})` : "Thêm ảnh"}
                   </span>
                 </button>
 
@@ -391,7 +391,7 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onPostCreated, onS
                   type="submit"
                   id="btn-submit-create-post"
                   disabled={isSubmitting || isProcessingImages || (!content.trim() && imageUrls.length === 0)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-sm shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-sm shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shrink-0"
                 >
                   {isSubmitting ? (
                     <Sparkles className="w-4 h-4 animate-spin" />

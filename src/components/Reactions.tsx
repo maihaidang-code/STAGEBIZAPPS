@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ThumbsUp, Heart, Smile, Sparkles, AlertCircle } from "lucide-react";
 import { ReactionType, ReactionSummary } from "../types";
+import { formatNumber } from "../utils/formatNumber";
 
 export interface ReactionConfig {
   type: ReactionType;
@@ -163,7 +164,7 @@ export const ReactionSummaryBadge: React.FC<ReactionSummaryBadgeProps> = ({
           </span>
         ))}
       </div>
-      <span className="font-semibold text-slate-600 dark:text-slate-300 group-hover:underline">{total}</span>
+      <span className="font-semibold text-slate-600 dark:text-slate-300 group-hover:underline">{formatNumber(total)}</span>
     </button>
   );
 };

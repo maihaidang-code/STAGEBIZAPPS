@@ -174,8 +174,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="relative" ref={userMenuRef}>
                 <button
                   id="btn-user-avatar-menu"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-indigo-400 transition-all"
+                  onClick={() => onSelectUser(user.id)}
+                  className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-indigo-400 transition-all cursor-pointer"
+                  title="Trang cá nhân của bạn"
                 >
                   <img
                     src={user.avatar}

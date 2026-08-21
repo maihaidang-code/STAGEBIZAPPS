@@ -22,7 +22,8 @@ import {
   Info,
   ShieldCheck,
   RefreshCw,
-  Smile
+  Smile,
+  ArrowLeft
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
@@ -357,7 +358,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       {/* ========================================================= */}
       {/* LEFT COLUMN: ROOMS LIST & ACTIONS (340px)                */}
       {/* ========================================================= */}
-      <div className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+      <div className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col bg-slate-50/50 dark:bg-slate-900/50 shrink-0 ${selectedRoomId ? "hidden md:flex" : "flex"}`}>
         
         {/* Header with Title & Action Buttons */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3">
@@ -536,7 +537,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       {/* ========================================================= */}
       {/* RIGHT COLUMN: ACTIVE CHAT ROOM CONVERSATION               */}
       {/* ========================================================= */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 min-w-0 relative">
+      <div className={`flex-1 flex flex-col bg-white dark:bg-slate-900 min-w-0 relative ${selectedRoomId ? "flex" : "hidden md:flex"}`}>
         
         {selectedRoom ? (
           <>
@@ -545,6 +546,17 @@ export const ChatView: React.FC<ChatViewProps> = ({
               
               {/* Room Title & Code */}
               <div className="flex items-center gap-3 min-w-0">
+                {/* Back Button on top left */}
+                <button
+                  id="btn-chat-back"
+                  onClick={() => setSelectedRoomId(null)}
+                  className="p-2 -ml-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold shrink-0 cursor-pointer"
+                  title="Quay lại danh sách nhóm"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Quay lại</span>
+                </button>
+
                 <img
                   src={selectedRoom.avatar || selectedRoom.owner?.avatar || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&auto=format&fit=crop&q=80"}
                   alt={selectedRoom.name}
