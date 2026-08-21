@@ -198,6 +198,46 @@ function MainApp() {
             ) : (
               /* Newsfeed View Mode */
               <>
+                {/* Feed Categories / Quick Filter Pills */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                      !searchQuery
+                        ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/30"
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    🔥 Tất cả bài viết
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSearchQuery("anh");
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                      searchQuery === "anh"
+                        ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/30"
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    🖼️ Hình ảnh & Đa phương tiện
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSearchQuery("Fullstack");
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                      searchQuery === "Fullstack"
+                        ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/30"
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    💻 Tech & Lập trình
+                  </button>
+                </div>
+
                 {/* Create Post Box (top of feed) */}
                 <CreatePostBox
                   onPostCreated={handlePostCreated}

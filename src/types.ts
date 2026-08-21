@@ -28,6 +28,7 @@ export interface User {
   role?: UserRole;
   followers: string[]; // array of user IDs
   following: string[]; // array of user IDs
+  savedPosts?: string[]; // array of post IDs
   isFriend?: boolean;
   isFollowedBy?: boolean;
   friendsCount?: number;
@@ -69,6 +70,19 @@ export interface PostReactionUser {
   createdAt?: string;
 }
 
+export interface PollOption {
+  id: string;
+  text: string;
+  votes: string[]; // array of user IDs
+}
+
+export interface Poll {
+  question: string;
+  options: PollOption[];
+  totalVotes: number;
+  userVotedOptionId?: string | null;
+}
+
 export interface Post {
   id: string;
   authorId: string;
@@ -83,6 +97,7 @@ export interface Post {
   content: string;
   image?: string;
   images?: string[];
+  poll?: Poll | null;
   originalPostId?: string;
   originalPost?: Post | null;
   visibility?: PostVisibility;
@@ -96,6 +111,7 @@ export interface Post {
   updatedAt?: string;
   isLiked?: boolean;
   isAuthor?: boolean;
+  isBookmarked?: boolean;
 }
 
 export interface CommentReaction {
