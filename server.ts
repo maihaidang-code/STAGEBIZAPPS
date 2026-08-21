@@ -518,7 +518,44 @@ const initialVerificationRequests: StoredVerificationRequest[] = [
   },
 ];
 
+interface StoredStory {
+  id: string;
+  userId: string;
+  mediaUrl: string;
+  caption?: string;
+  viewsCount: number;
+  createdAt: string;
+}
+
+const initialStories: StoredStory[] = [
+  {
+    id: "story_1",
+    userId: "user-1",
+    mediaUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80",
+    caption: "Coding setup ban đêm cực chill 💻✨",
+    viewsCount: 42,
+    createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+  },
+  {
+    id: "story_2",
+    userId: "user-2",
+    mediaUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=80",
+    caption: "Team meeting brainstorm tính năng mới 🚀",
+    viewsCount: 28,
+    createdAt: new Date(Date.now() - 4 * 3600000).toISOString(),
+  },
+  {
+    id: "story_3",
+    userId: "user-3",
+    mediaUrl: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&auto=format&fit=crop&q=80",
+    caption: "Cà phê sáng cùng anh em developer ☕",
+    viewsCount: 56,
+    createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+  }
+];
+
 interface StoredCommunity {
+
   id: string;
   name: string;
   slug: string;
@@ -576,6 +613,7 @@ class Database {
   notifications: StoredNotification[] = [];
   verificationRequests: StoredVerificationRequest[] = [];
   communities: StoredCommunity[] = [];
+  stories: StoredStory[] = [];
 
   constructor() {
     this.load();
@@ -594,6 +632,7 @@ class Database {
         this.notifications = data.notifications || [...initialNotifications];
         this.verificationRequests = data.verificationRequests || [...initialVerificationRequests];
         this.communities = data.communities || [...initialCommunities];
+        this.stories = data.stories || [...initialStories];
         console.log("📂 [Database] Đã tải dữ liệu thành công từ db.json");
         return;
       }
@@ -609,6 +648,7 @@ class Database {
     this.notifications = [...initialNotifications];
     this.verificationRequests = [...initialVerificationRequests];
     this.communities = [...initialCommunities];
+    this.stories = [...initialStories];
     this.commit();
   }
 
@@ -623,7 +663,9 @@ class Database {
         notifications: this.notifications,
         verificationRequests: this.verificationRequests,
         communities: this.communities,
+        stories: this.stories,
       };
+
       fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
     } catch (e) {
       console.error("Lỗi ghi db.json:", e);
@@ -3480,6 +3522,58 @@ async function startServer() {
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "Không thể thực hiện thao tác";
+      res.status(500).json({ success: false, error: errorMsg });
+    }
+  });
+
+  // ==========================================
+  // STORIES API ROUTES
+  // ==========================================
+  app.get("/api/stories", optionalAuthenticate, (req: AuthRequest, res: Response): void => {
+    try {
+      const result = db.stories.map((s) => {
+        const author = db.findUserById(s.userId);
+        return {
+          ...s,
+          user: author ? db.sanitizeUser(author) : { id: s.userId, name: "Thành viên", username: "user", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80" },
+        };
+      });
+      res.json({ success: true, data: result });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Không thể tải danh sách tin";
+      res.status(500).json({ success: false, error: errorMsg });
+    }
+  });
+
+  app.post("/api/stories", authenticateToken, (req: AuthRequest, res: Response): void => {
+    try {
+      const { mediaUrl, caption } = req.body;
+      if (!mediaUrl) {
+        res.status(400).json({ success: false, error: "Hình ảnh/Media tin là bắt buộc" });
+        return;
+      }
+      const newStory: StoredStory = {
+        id: `story_${Date.now()}`,
+        userId: req.userId!,
+        mediaUrl,
+        caption: caption?.trim() || "",
+        viewsCount: 1,
+        createdAt: new Date().toISOString(),
+      };
+      db.stories.unshift(newStory);
+      db.commit();
+
+      const author = db.findUserById(req.userId!);
+      res.status(201).json({
+        success: true,
+        message: "Đã đăng tin thành công!",
+        data: {
+          ...newStory,
+          user: author ? db.sanitizeUser(author) : null,
+        },
+      });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Không thể đăng tin";
       res.status(500).json({ success: false, error: errorMsg });
     }
   });

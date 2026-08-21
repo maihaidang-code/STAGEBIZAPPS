@@ -11,6 +11,7 @@ import { ImageLightboxModal } from "./components/ImageLightboxModal";
 import { ChatView } from "./components/ChatView";
 import { NotificationsView } from "./components/NotificationsView";
 import { CommunitiesView } from "./components/CommunitiesView";
+import { StoriesBar } from "./components/StoriesBar";
 import { Toast, ToastMessage } from "./components/Toast";
 import { api } from "./services/api";
 import { Post } from "./types";
@@ -244,6 +245,12 @@ function MainApp() {
                     💻 Tech & Lập trình
                   </button>
                 </div>
+
+                {/* Stories Bar */}
+                <StoriesBar
+                  onShowToast={showToast}
+                  onOpenAuthModal={() => openAuthModal("login")}
+                />
 
                 {/* Create Post Box (top of feed) */}
                 <CreatePostBox

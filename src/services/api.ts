@@ -12,6 +12,7 @@ import {
   VerificationRequest,
   PostVisibility,
   Community,
+  Story,
 } from "../types";
 
 const TOKEN_KEY = "mini_social_jwt_token";
@@ -561,4 +562,24 @@ export const api = {
     });
     return handleResponse<{ isMember: boolean; membersCount: number }>(res);
   },
+
+  // ==========================================
+  // STORIES
+  // ==========================================
+  async getStories(): Promise<Story[]> {
+    const res = await fetch("/api/stories", {
+      headers: getHeaders(false),
+    });
+    return handleResponse<Story[]>(res);
+  },
+
+  async createStory(data: { mediaUrl: string; caption?: string }): Promise<Story> {
+    const res = await fetch("/api/stories", {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Story>(res);
+  },
 };
+

@@ -330,3 +330,20 @@ export interface Community {
   createdAt: string;
 }
 
+export interface Story {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+    isVerified?: boolean;
+  };
+  mediaUrl: string;
+  caption?: string;
+  createdAt: string;
+  viewsCount: number;
+}
+
+
