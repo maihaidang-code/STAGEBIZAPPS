@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
+import fs from "fs";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -7,6 +8,7 @@ import { createServer as createViteServer } from "vite";
 
 const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "mini_social_network_super_secret_key_2026";
+const DB_FILE = path.join(process.cwd(), "db.json");
 
 type ReactionType = "like" | "love" | "haha" | "wow" | "sad" | "angry";
 
@@ -515,15 +517,65 @@ const initialVerificationRequests: StoredVerificationRequest[] = [
   },
 ];
 
-// In-memory Database Store
+// Persistent Database Store with db.json
 class Database {
-  users: StoredUser[] = [...initialUsers];
-  posts: StoredPost[] = [...initialPosts];
-  comments: StoredComment[] = [...initialComments];
-  chatRooms: StoredChatRoom[] = [...initialChatRooms];
-  chatMessages: StoredChatMessage[] = [...initialChatMessages];
-  notifications: StoredNotification[] = [...initialNotifications];
-  verificationRequests: StoredVerificationRequest[] = [...initialVerificationRequests];
+  users: StoredUser[] = [];
+  posts: StoredPost[] = [];
+  comments: StoredComment[] = [];
+  chatRooms: StoredChatRoom[] = [];
+  chatMessages: StoredChatMessage[] = [];
+  notifications: StoredNotification[] = [];
+  verificationRequests: StoredVerificationRequest[] = [];
+
+  constructor() {
+    this.load();
+  }
+
+  load() {
+    try {
+      if (fs.existsSync(DB_FILE)) {
+        const raw = fs.readFileSync(DB_FILE, "utf-8");
+        const data = JSON.parse(raw);
+        this.users = data.users || [...initialUsers];
+        this.posts = data.posts || [...initialPosts];
+        this.comments = data.comments || [...initialComments];
+        this.chatRooms = data.chatRooms || [...initialChatRooms];
+        this.chatMessages = data.chatMessages || [...initialChatMessages];
+        this.notifications = data.notifications || [...initialNotifications];
+        this.verificationRequests = data.verificationRequests || [...initialVerificationRequests];
+        console.log("📂 [Database] Đã tải dữ liệu thành công từ db.json");
+        return;
+      }
+    } catch (e) {
+      console.error("Lỗi đọc db.json, sử dụng dữ liệu mặc định:", e);
+    }
+
+    this.users = [...initialUsers];
+    this.posts = [...initialPosts];
+    this.comments = [...initialComments];
+    this.chatRooms = [...initialChatRooms];
+    this.chatMessages = [...initialChatMessages];
+    this.notifications = [...initialNotifications];
+    this.verificationRequests = [...initialVerificationRequests];
+    this.commit();
+  }
+
+  commit() {
+    try {
+      const data = {
+        users: this.users,
+        posts: this.posts,
+        comments: this.comments,
+        chatRooms: this.chatRooms,
+        chatMessages: this.chatMessages,
+        notifications: this.notifications,
+        verificationRequests: this.verificationRequests,
+      };
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+    } catch (e) {
+      console.error("Lỗi ghi db.json:", e);
+    }
+  }
 
   // Helper to format user for client (exclude passwordHash)
   sanitizeUser(user: StoredUser) {
@@ -631,6 +683,7 @@ class Database {
     };
 
     this.notifications.unshift(newNotif);
+    this.commit();
     return newNotif;
   }
 
@@ -967,6 +1020,7 @@ function cleanupDeletedAccounts() {
   usersToDelete.forEach((u) => {
     console.log(`🧹 Đã xóa vĩnh viễn tài khoản ${u.username} (${u.id}) sau thời gian ân hạn 3 ngày.`);
   });
+  db.commit();
 }
 
 // Auth Middleware
